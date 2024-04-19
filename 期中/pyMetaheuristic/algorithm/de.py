@@ -64,13 +64,14 @@ def velocity(position, best_global, k0, k1, k2, F, min_values, max_values, Cr, t
 ############################################################################
 
 # Function: DE/Best/1/Bin Scheme
-def differential_evolution(n = 3, min_values = [-5,-5], max_values = [5,5], iterations = 50, F = 0.9, Cr = 0.2, target_function = target_function, verbose = True, start_init = None, target_value = None, evaluations = None):    
+def differential_evolution(n = 3, min_values = [-5,-5], max_values = [5,5], iterations = 50, F = 0.9, Cr = 0.2, target_function = target_function, verbose = True, start_init = None, target_value = None, evaluations = None,all_list_evalua_min=[]):    
     evalua_count= 0
     position    = initial_variables(n, min_values, max_values, target_function, start_init)
+    
     evalua_count+= n
     best_global = np.copy(position [position [:,-1].argsort()][0,:])
     count       = 0
-    
+    list_iter_min=[]
     while (count <= iterations and evalua_count<=evaluations):
         if (verbose == True):
             print('Iteration = ', count, ' f(x) ', best_global[-1])
@@ -81,13 +82,16 @@ def differential_evolution(n = 3, min_values = [-5,-5], max_values = [5,5], iter
                 k1 = int(np.random.randint(position.shape[0], size = 1))
             vi = velocity(position, best_global, i, k1, k2, F, min_values, max_values, Cr, target_function, evalua_count)        
             evalua_count+=1
-            if evalua_count>=evaluations:
-                break
+            
             if (vi[-1] <= position[i,-1]):
                 for j in range(0, position.shape[1]):
                     position[i,j] = vi[j]
+            
             if (best_global[-1] > position [position [:,-1].argsort()][0,:][-1]):
                 best_global = np.copy(position [position [:,-1].argsort()][0,:])  
+            # list_iter_min.append(best_global[-1])
+            if evalua_count>=evaluations:
+                break
         if (target_value is not None):
             if (best_global[-1] <= target_value):
                 count = 2* iterations
@@ -95,7 +99,9 @@ def differential_evolution(n = 3, min_values = [-5,-5], max_values = [5,5], iter
                 count = count + 1
         else:
             count = count + 1
-        # print('evaluation:',evalua_count)    
+        list_iter_min.append(best_global[-1])
+        # print('evaluation:',evalua_count)  
+    all_list_evalua_min.append(list_iter_min)  
     return best_global
 
 ############################################################################
